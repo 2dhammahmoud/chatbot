@@ -672,7 +672,9 @@ async function showFarewellMessages() {
 
 document.addEventListener('DOMContentLoaded', async function () {
 
-
+    // Load configuration files first
+    const loaded = await loadConfigurations();
+    if (!loaded) return;
 
     // Select elements
     const authSection = document.getElementById('auth-section');
@@ -867,6 +869,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         messageForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            if (!isConfigLoaded) {
+                addBotMessage("❌ لم يتم تحميل ملفات الإعدادات بعد. يرجى إعادة تحميل الصفحة.");
+                return;
             }
 
             const userMessage = messageInput.value.trim();
