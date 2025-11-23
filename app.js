@@ -672,9 +672,7 @@ async function showFarewellMessages() {
 
 document.addEventListener('DOMContentLoaded', async function () {
 
-    // Load configuration files first
-    const loaded = await loadConfigurations();
-    if (!loaded) return;
+
 
     // Select elements
     const authSection = document.getElementById('auth-section');
