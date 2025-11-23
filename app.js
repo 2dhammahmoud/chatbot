@@ -867,10 +867,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         messageForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            if (!isConfigLoaded) {
-                addBotMessage("❌ لم يتم تحميل ملفات الإعدادات بعد. يرجى إعادة تحميل الصفحة.");
-                return;
-            }
 
             const userMessage = messageInput.value.trim();
             if (!userMessage) return;
