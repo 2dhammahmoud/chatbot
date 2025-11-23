@@ -565,73 +565,56 @@ async function showProblemsMenu() {
     addBotMessage(menuMessage);
     chatState.mode = 'selecting_problem';
 }
-
 async function showProblemSolutions(problemIndex) {
-    const problem = chatState.solutionsState.problems[problemIndex];
+    // 1. استخراج بيانات المشكلة من حالة المحادثة
+    const problem = chatState.solutionsState.problems[problemIndex];
 
-    console.log('🔍 Displaying problem solutions:', problem);
+    console.log('🔍 Displaying problem solutions:', problem);
 
-    // Display problem name and description
-    await delay(500);
-    addBotMessage(`**${problem.name}**\n\n${problem.description}`);
+    // 2. عرض اسم المشكلة والوصف
+    await delay(500);
+    addBotMessage(`**${problem.name}**\n\n${problem.description}`);
 
-    await delay(1500);
-    addBotMessage("**الحلول المقترحة:**");
+    await delay(1500);
+    addBotMessage("**الحلول المقترحة:**");
 
-    // Display first solution
-    if (problem.selected_solutions && problem.selected_solutions[0]) {
-        await delay(1000);
-        addBotMessage(problem.selected_solutions[0]);
-    }
+    // 3. عرض الحل الأول والثاني (هذه الأجزاء سليمة)
+    if (problem.selected_solutions && problem.selected_solutions[0]) {
+        await delay(1000);
+        addBotMessage(problem.selected_solutions[0]);
+    }
 
-    // Display second solution
-    if (problem.selected_solutions && problem.selected_solutions[1]) {
-        await delay(1500);
-        addBotMessage(problem.selected_solutions[1]);
-    }
+    if (problem.selected_solutions && problem.selected_solutions[1]) {
+        await delay(1500);
+        addBotMessage(problem.selected_solutions[1]);
+    }
 
-    // Display video (if exists)
-    if (problem.video_link) {
-        await delay(1500);
+    // 🚨 4. عرض الفيديو (الاعتماد على الرابط المباشر المرسل من الـ API)
+    if (problem.video_link) {
+        await delay(1500);
+        // نرسل رسالة توضيحية ونعتمد على parseMarkdown لعرض الرابط كزر
+        addBotMessage("**🎥 فيديو مفيد:**");
 
-        // Try to get video intro from solutions.json
-        let videoIntro = "**فيديو مفيد:**";
-        try {
-            if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key]) {
-                videoIntro = SOLUTIONS_DATA[problem.key].video_intro || videoIntro;
-            }
-        } catch (err) {
-            console.warn('⚠️ Failed to get video_intro:', err);
-        }
+        await delay(1000);
+        addBotMessage(problem.video_link);
+    }
 
-        addBotMessage(videoIntro);
+    // 🚨 5. عرض البودكاست (الاعتماد على البيانات المرسلة من الـ API)
+    // نعتمد على أن الـ API أرسل رابط البودكاست إذا كان موجوداً
+    if (problem.podcast_link) { 
+        await delay(1500);
+        addBotMessage("**🎧 بودكاست مفيد:**");
 
-        await delay(1000);
-        addBotMessage(problem.video_link);
-    }
+        await delay(1000);
+        addBotMessage(problem.podcast_link);
+    }
 
-    // Display podcast (if exists in solutions.json)
-    try {
-        if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key] && SOLUTIONS_DATA[problem.key].podcasts && SOLUTIONS_DATA[problem.key].podcasts[0]) {
-            await delay(1500);
+    // 6. سؤال المتابعة
+    await delay(1500);
+    addBotMessage("**عايز تشوف حلول لمشكلة تانية؟** (اكتب: نعم / لا)");
+    chatState.mode = 'after_problem_solutions';
 
-            const podcastIntro = SOLUTIONS_DATA[problem.key].podcast_intro || "**بودكاست مفيد:**";
-            addBotMessage(podcastIntro);
-
-            await delay(1000);
-            const podcast = SOLUTIONS_DATA[problem.key].podcasts[0];
-            addBotMessage(podcast);
-        }
-    } catch (err) {
-        console.warn('⚠️ Failed to get podcast:', err);
-    }
-
-    // Ask: Want to continue?
-    await delay(1500);
-    addBotMessage("**عايز تشوف حلول لمشكلة تانية؟** (اكتب: نعم / لا)");
-    chatState.mode = 'after_problem_solutions';
-
-    console.log('✅ All solutions displayed successfully');
+    console.log('✅ All solutions displayed successfully');
 }
 
 async function showNextSolution() {
