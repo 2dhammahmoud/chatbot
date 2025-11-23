@@ -428,7 +428,6 @@ function addUserMessage(message) {
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
 }
-
 function addBotMessage(message) {
     const messagesContainer = document.getElementById('messages-container');
     if (!messagesContainer) return;
@@ -437,17 +436,15 @@ function addBotMessage(message) {
     messageDiv.className = 'flex items-start space-x-4 message-pop';
     messageDiv.innerHTML = `
         <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
-            // 🚨 التعديل 1: تصغير حجم الصورة (w-12 h-12 -> w-10 h-10)
-            class="w-10 h-10 rounded-full flex-shrink-0 shadow-lg object-cover">
-        
-        // 🚨 التعديل 2: تصغير أقصى عرض (max-w-md -> max-w-xs)
-        <div class="bot-message rounded-2xl p-6 max-w-xs shadow-xl"> 
+             class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
+        <div class="bot-message rounded-2xl p-6 max-w-md shadow-xl">
             <div class="prose text-gray-800 leading-relaxed text-lg page-transition">${parseMarkdown(message)}</div>
         </div>
     `;
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
 }
+
 
 function showTypingIndicator() {
     const messagesContainer = document.getElementById('messages-container');
