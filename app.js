@@ -317,16 +317,16 @@ const SOLUTIONS_DATA = {
 };
 
 let chatState = {
-    mode: 'greeting',
-    currentQuestionIndex: 0,
-    collectedData: {},
-    // Solutions state
-    solutionsState: {
-        problems: [],           // List of detected problems
-        currentProblemIndex: -1, // Current problem
-        currentSolutionIndex: 0, // Current solution
-        currentResourceIndex: 0  // Current video/podcast
-    }
+    mode: 'greeting',
+    currentQuestionIndex: 0,
+    collectedData: {},
+    // Solutions state
+    solutionsState: {
+        problems: [],           // List of detected problems
+        currentProblemIndex: -1, // Current problem
+        currentSolutionIndex: 0, // Current solution
+        currentResourceIndex: 0  // Current video/podcast
+    }
 };
 
 let currentIntroStep = 0;
@@ -339,75 +339,75 @@ let currentSection = 'chat';
 // ============================================
 
 function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function scrollToBottom() {
-    const container = document.getElementById('messages-container');
-    if (container) {
-        container.scrollTop = container.scrollHeight;
-    }
+    const container = document.getElementById('messages-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
 }
 
 function parseMarkdown(text) {
-    if (typeof text !== 'string') return '';
+    if (typeof text !== 'string') return '';
 
-    // Convert bold text
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Convert bold text
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-    // Convert URLs to beautiful buttons
-    const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
-    text = text.replace(urlRegex, function (url) {
-        const href = url.startsWith('www.') ? 'https://' + url : url;
+    // Convert URLs to beautiful buttons
+    const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
+    text = text.replace(urlRegex, function (url) {
+        const href = url.startsWith('www.') ? 'https://' + url : url;
 
-        // Determine button text based on link type
-        let buttonText = '🔗 افتح الرابط';
-        let buttonColor = 'bg-blue-600 hover:bg-blue-700';
+        // Determine button text based on link type
+        let buttonText = '🔗 افتح الرابط';
+        let buttonColor = 'bg-blue-600 hover:bg-blue-700';
 
-        if (url.includes('youtu')) {
-            buttonText = '🎥 شاهد الفيديو';
-            buttonColor = 'bg-red-600 hover:bg-red-700';
-        } else if (url.includes('podcast')) {
-            buttonText = '🎧 استمع للبودكاست';
-            buttonColor = 'bg-purple-600 hover:bg-purple-700';
-        }
+        if (url.includes('youtu')) {
+            buttonText = '🎥 شاهد الفيديو';
+            buttonColor = 'bg-red-600 hover:bg-red-700';
+        } else if (url.includes('podcast')) {
+            buttonText = '🎧 استمع للبودكاست';
+            buttonColor = 'bg-purple-600 hover:bg-purple-700';
+        }
 
-        return `<a href="${href}" target="_blank" rel="noopener noreferrer" 
-                   class="inline-block ${buttonColor} text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 my-2">
-                   ${buttonText}
-                </a>`;
-    });
+        return `<a href="${href}" target="_blank" rel="noopener noreferrer" 
+                   class="inline-block ${buttonColor} text-white px-6 py-3 rounded-lg font-medium shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 my-2">
+                   ${buttonText}
+                </a>`;
+    });
 
-    // Convert line breaks
-    text = text.replace(/\n/g, '<br>');
+    // Convert line breaks
+    text = text.replace(/\n/g, '<br>');
 
-    return text;
+    return text;
 }
 
 // Translate answers to standardized keys
 function getStoredKey(userMessage, questionConfig) {
-    const userTextLower = userMessage.toLowerCase();
-    const repliesConfig = questionConfig.answer_replies || {};
+    const userTextLower = userMessage.toLowerCase();
+    const repliesConfig = questionConfig.answer_replies || {};
 
-    for (const [stdKey, data] of Object.entries(repliesConfig)) {
-        if (stdKey !== "Other") {
-            for (const keyword of data.keywords || []) {
-                if (userTextLower.includes(keyword.toLowerCase())) {
-                    return { reply: data.bot_reply[0], storedKey: stdKey };
-                }
-            }
-        }
-    }
+    for (const [stdKey, data] of Object.entries(repliesConfig)) {
+        if (stdKey !== "Other") {
+            for (const keyword of data.keywords || []) {
+                if (userTextLower.includes(keyword.toLowerCase())) {
+                    return { reply: data.bot_reply[0], storedKey: stdKey };
+                }
+            }
+        }
+    }
 
-    if (repliesConfig.Other) {
-        const reply = repliesConfig.Other.bot_reply[0];
-        if (questionConfig.field === "Country") {
-            return { reply: reply, storedKey: userMessage };
-        }
-        return { reply: reply, storedKey: 'Other' };
-    }
+    if (repliesConfig.Other) {
+        const reply = repliesConfig.Other.bot_reply[0];
+        if (questionConfig.field === "Country") {
+            return { reply: reply, storedKey: userMessage };
+        }
+        return { reply: reply, storedKey: 'Other' };
+    }
 
-    return { reply: RESPONSES_DATA.unclear_responses[0], storedKey: userMessage };
+    return { reply: RESPONSES_DATA.unclear_responses[0], storedKey: userMessage };
 }
 
 // ============================================
@@ -415,63 +415,63 @@ function getStoredKey(userMessage, questionConfig) {
 // ============================================
 
 function addUserMessage(message) {
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;
+    const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) return;
 
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex justify-end message-pop';
-    messageDiv.innerHTML = `
-        <div class="user-message bg-blue-600 text-white rounded-2xl p-6 max-w-md shadow-xl">
-            <p class="leading-relaxed text-lg">${message}</p>
-        </div>
-    `;
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex justify-end message-pop';
+    messageDiv.innerHTML = `
+        <div class="user-message bg-blue-600 text-white rounded-2xl p-6 max-w-md shadow-xl">
+            <p class="leading-relaxed text-lg">${message}</p>
+        </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
 }
 
 function addBotMessage(message) {
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;
+    const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) return;
 
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex items-start space-x-4 message-pop';
-    messageDiv.innerHTML = `
-        <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
-             class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
-        <div class="bot-message rounded-2xl p-6 max-w-md shadow-xl">
-            <div class="prose text-gray-800 leading-relaxed text-lg page-transition">${parseMarkdown(message)}</div>
-        </div>
-    `;
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex items-start space-x-4 message-pop';
+    messageDiv.innerHTML = `
+        <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
+             class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
+        <div class="bot-message rounded-2xl p-6 max-w-md shadow-xl">
+            <div class="prose text-gray-800 leading-relaxed text-lg page-transition">${parseMarkdown(message)}</div>
+        </div>
+    `;
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
 }
 
 function showTypingIndicator() {
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;
-    removeTypingIndicator();
+    const messagesContainer = document.getElementById('messages-container');
+    if (!messagesContainer) return;
+    removeTypingIndicator();
 
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'flex items-start space-x-4';
-    typingDiv.id = 'typing-indicator';
-    typingDiv.innerHTML = `
-        <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
-            class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
-        <div class="bot-message rounded-2xl p-6 shadow-xl">
-            <div class="flex space-x-2">
-                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
-                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
-                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
-            </div>
-        </div>
-    `;
-    messagesContainer.appendChild(typingDiv);
-    scrollToBottom();
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'flex items-start space-x-4';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
+            class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
+        <div class="bot-message rounded-2xl p-6 shadow-xl">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
+                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
+                <div class="w-3 h-3 bg-gray-400 rounded-full typing-dots"></div>
+            </div>
+        </div>
+    `;
+    messagesContainer.appendChild(typingDiv);
+    scrollToBottom();
 }
 
 function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (typingIndicator) typingIndicator.remove();
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) typingIndicator.remove();
 }
 
 // ============================================
@@ -479,74 +479,74 @@ function removeTypingIndicator() {
 // ============================================
 
 async function sendDataToAPI(collectedData) {
-    showTypingIndicator();
-    await delay(1500);
+    showTypingIndicator();
+    await delay(1500);
 
-    try {
-        const payload = {
-            Gender: collectedData.Gender || 'Male',
-            Country: collectedData.Country || 'Other',
-            Occupation: collectedData.Occupation || 'Other',
-            Growing_Stress: collectedData.Growing_Stress || 'No',
-            Changes_Habits: collectedData.Changes_Habits || 'No',
-            Days_Indoors: collectedData.Days_Indoors || 'Moderate',
-            Mood_Swings: collectedData.Mood_Swings || 'Medium',
-            Coping_Struggles: collectedData.Coping_Struggles || 'No',
-            Work_Interest: collectedData.Work_Interest || 'Yes',
-            Social_Weakness: collectedData.Social_Weakness || 'No',
-            Mental_Health_History: collectedData.Mental_Health_History || 'No',
-            family_history: collectedData.family_history || 'No',
-            care_options: collectedData.care_options || 'No',
-            mental_health_interview: collectedData.mental_health_interview || 'No'
-        };
+    try {
+        const payload = {
+            Gender: collectedData.Gender || 'Male',
+            Country: collectedData.Country || 'Other',
+            Occupation: collectedData.Occupation || 'Other',
+            Growing_Stress: collectedData.Growing_Stress || 'No',
+            Changes_Habits: collectedData.Changes_Habits || 'No',
+            Days_Indoors: collectedData.Days_Indoors || 'Moderate',
+            Mood_Swings: collectedData.Mood_Swings || 'Medium',
+            Coping_Struggles: collectedData.Coping_Struggles || 'No',
+            Work_Interest: collectedData.Work_Interest || 'Yes',
+            Social_Weakness: collectedData.Social_Weakness || 'No',
+            Mental_Health_History: collectedData.Mental_Health_History || 'No',
+            family_history: collectedData.family_history || 'No',
+            care_options: collectedData.care_options || 'No',
+            mental_health_interview: collectedData.mental_health_interview || 'No'
+        };
 
-        console.log('📤 Sending data to API:', payload);
+        console.log('📤 Sending data to API:', payload);
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
 
-        removeTypingIndicator();
+        removeTypingIndicator();
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
 
-        const result = await response.json();
-        console.log('📥 Received result from API:', result);
+        const result = await response.json();
+        console.log('📥 Received result from API:', result);
 
-        if (result.status === 'success') {
-            const stability = result.stability_percentage;
+        if (result.status === 'success') {
+            const stability = result.stability_percentage;
 
-            // Display stability percentage
-            let predictionMessage = `بناءً على تحليل إجاباتك، نسبة **الصحة النفسية المناسبة** لديك: **${stability.toFixed(2)}%**\n\n`;
-            predictionMessage += result.final_advice;
+            // Display stability percentage
+            let predictionMessage = `بناءً على تحليل إجاباتك، نسبة **الصحة النفسية المناسبة** لديك: **${stability.toFixed(2)}%**\n\n`;
+            predictionMessage += result.final_advice;
 
-            addBotMessage(predictionMessage);
-            await delay(2000);
+            addBotMessage(predictionMessage);
+            await delay(2000);
 
-            // Save problems and show menu
-            if (result.solutions_report && result.solutions_report.problems && result.solutions_report.problems.length > 0) {
-                chatState.solutionsState.problems = result.solutions_report.problems;
-                await showProblemsMenu();
-            } else {
-                addBotMessage("✅ لم نجد أي تحديات رئيسية تحتاج لحلول فورية!");
-                await delay(1500);
-                await showFarewellMessages();
-            }
+            // Save problems and show menu
+            if (result.solutions_report && result.solutions_report.problems && result.solutions_report.problems.length > 0) {
+                chatState.solutionsState.problems = result.solutions_report.problems;
+                await showProblemsMenu();
+            } else {
+                addBotMessage("✅ لم نجد أي تحديات رئيسية تحتاج لحلول فورية!");
+                await delay(1500);
+                await showFarewellMessages();
+            }
 
-        } else {
-            addBotMessage(`❌ خطأ: ${result.detail || 'تحقق من Console'}`);
-        }
+        } else {
+            addBotMessage(`❌ خطأ: ${result.detail || 'تحقق من Console'}`);
+        }
 
-    } catch (error) {
-        removeTypingIndicator();
-        console.error('❌ Network Error:', error);
-        addBotMessage(`❌ فشل الاتصال بالخادم. الخطأ: ${error.message}\n\nتأكد من:\n• تشغيل api_server.py على المنفذ 8000\n• عدم وجود Firewall يمنع الاتصال`);
-    }
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('❌ Network Error:', error);
+        addBotMessage(`❌ فشل الاتصال بالخادم. الخطأ: ${error.message}\n\nتأكد من:\n• تشغيل api_server.py على المنفذ 8000\n• عدم وجود Firewall يمنع الاتصال`);
+    }
 }
 
 // ============================================
@@ -554,116 +554,116 @@ async function sendDataToAPI(collectedData) {
 // ============================================
 
 async function showProblemsMenu() {
-    const problems = chatState.solutionsState.problems;
+    const problems = chatState.solutionsState.problems;
 
-    let menuMessage = "**المشاكل التي تم اكتشافها:**\n\n";
-    problems.forEach((problem, index) => {
-        menuMessage += `**${index + 1}.** ${problem.name}\n`;
-    });
-    menuMessage += "\n**اختر رقم المشكلة اللي عايز تعرف حلولها:**";
+    let menuMessage = "**المشاكل التي تم اكتشافها:**\n\n";
+    problems.forEach((problem, index) => {
+        menuMessage += `**${index + 1}.** ${problem.name}\n`;
+    });
+    menuMessage += "\n**اختر رقم المشكلة اللي عايز تعرف حلولها:**";
 
-    addBotMessage(menuMessage);
-    chatState.mode = 'selecting_problem';
+    addBotMessage(menuMessage);
+    chatState.mode = 'selecting_problem';
 }
 
 async function showProblemSolutions(problemIndex) {
-    const problem = chatState.solutionsState.problems[problemIndex];
+    const problem = chatState.solutionsState.problems[problemIndex];
 
-    console.log('🔍 Displaying problem solutions:', problem);
+    console.log('🔍 Displaying problem solutions:', problem);
 
-    // Display problem name and description
-    await delay(500);
-    addBotMessage(`**${problem.name}**\n\n${problem.description}`);
+    // Display problem name and description
+    await delay(500);
+    addBotMessage(`**${problem.name}**\n\n${problem.description}`);
 
-    await delay(1500);
-    addBotMessage("**الحلول المقترحة:**");
+    await delay(1500);
+    addBotMessage("**الحلول المقترحة:**");
 
-    // Display first solution
-    if (problem.selected_solutions && problem.selected_solutions[0]) {
-        await delay(1000);
-        addBotMessage(problem.selected_solutions[0]);
-    }
+    // Display first solution
+    if (problem.selected_solutions && problem.selected_solutions[0]) {
+        await delay(1000);
+        addBotMessage(problem.selected_solutions[0]);
+    }
 
-    // Display second solution
-    if (problem.selected_solutions && problem.selected_solutions[1]) {
-        await delay(1500);
-        addBotMessage(problem.selected_solutions[1]);
-    }
+    // Display second solution
+    if (problem.selected_solutions && problem.selected_solutions[1]) {
+        await delay(1500);
+        addBotMessage(problem.selected_solutions[1]);
+    }
 
-    // Display video (if exists)
-    if (problem.video_link) {
-        await delay(1500);
+    // Display video (if exists)
+    if (problem.video_link) {
+        await delay(1500);
 
-        // Try to get video intro from solutions.json
-        let videoIntro = "**فيديو مفيد:**";
-        try {
-            if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key]) {
-                videoIntro = SOLUTIONS_DATA[problem.key].video_intro || videoIntro;
-            }
-        } catch (err) {
-            console.warn('⚠️ Failed to get video_intro:', err);
-        }
+        // Try to get video intro from solutions.json
+        let videoIntro = "**فيديو مفيد:**";
+        try {
+            if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key]) {
+                videoIntro = SOLUTIONS_DATA[problem.key].video_intro || videoIntro;
+            }
+        } catch (err) {
+            console.warn('⚠️ Failed to get video_intro:', err);
+        }
 
-        addBotMessage(videoIntro);
+        addBotMessage(videoIntro);
 
-        await delay(1000);
-        addBotMessage(problem.video_link);
-    }
+        await delay(1000);
+        addBotMessage(problem.video_link);
+    }
 
-    // Display podcast (if exists in solutions.json)
-    try {
-        if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key] && SOLUTIONS_DATA[problem.key].podcasts && SOLUTIONS_DATA[problem.key].podcasts[0]) {
-            await delay(1500);
+    // Display podcast (if exists in solutions.json)
+    try {
+        if (SOLUTIONS_DATA && problem.key && SOLUTIONS_DATA[problem.key] && SOLUTIONS_DATA[problem.key].podcasts && SOLUTIONS_DATA[problem.key].podcasts[0]) {
+            await delay(1500);
 
-            const podcastIntro = SOLUTIONS_DATA[problem.key].podcast_intro || "**بودكاست مفيد:**";
-            addBotMessage(podcastIntro);
+            const podcastIntro = SOLUTIONS_DATA[problem.key].podcast_intro || "**بودكاست مفيد:**";
+            addBotMessage(podcastIntro);
 
-            await delay(1000);
-            const podcast = SOLUTIONS_DATA[problem.key].podcasts[0];
-            addBotMessage(podcast);
-        }
-    } catch (err) {
-        console.warn('⚠️ Failed to get podcast:', err);
-    }
+            await delay(1000);
+            const podcast = SOLUTIONS_DATA[problem.key].podcasts[0];
+            addBotMessage(podcast);
+        }
+    } catch (err) {
+        console.warn('⚠️ Failed to get podcast:', err);
+    }
 
-    // Ask: Want to continue?
-    await delay(1500);
-    addBotMessage("**عايز تشوف حلول لمشكلة تانية؟** (اكتب: نعم / لا)");
-    chatState.mode = 'after_problem_solutions';
+    // Ask: Want to continue?
+    await delay(1500);
+    addBotMessage("**عايز تشوف حلول لمشكلة تانية؟** (اكتب: نعم / لا)");
+    chatState.mode = 'after_problem_solutions';
 
-    console.log('✅ All solutions displayed successfully');
+    console.log('✅ All solutions displayed successfully');
 }
 
 async function showNextSolution() {
-    // This function is no longer used
+    // This function is no longer used
 }
 
 async function showResources() {
-    // This function is no longer used
+    // This function is no longer used
 }
 
 async function showFarewellMessages() {
-    console.log('🔍 Starting farewell message display...');
+    console.log('🔍 Starting farewell message display...');
 
-    // Farewell message is in solutions.json under final_summary
-    if (SOLUTIONS_DATA && SOLUTIONS_DATA.final_summary && SOLUTIONS_DATA.final_summary.messages) {
-        console.log('✅ Farewell message found:', SOLUTIONS_DATA.final_summary.messages);
+    // Farewell message is in solutions.json under final_summary
+    if (SOLUTIONS_DATA && SOLUTIONS_DATA.final_summary && SOLUTIONS_DATA.final_summary.messages) {
+        console.log('✅ Farewell message found:', SOLUTIONS_DATA.final_summary.messages);
 
-        for (const msg of SOLUTIONS_DATA.final_summary.messages) {
-            await delay(1500);
-            addBotMessage(msg);
-        }
+        for (const msg of SOLUTIONS_DATA.final_summary.messages) {
+            await delay(1500);
+            addBotMessage(msg);
+        }
 
-        console.log('✅ All farewell messages displayed');
-    } else {
-        console.error('❌ final_summary not found in solutions.json!');
-        console.log('SOLUTIONS_DATA:', SOLUTIONS_DATA);
+        console.log('✅ All farewell messages displayed');
+    } else {
+        console.error('❌ final_summary not found in solutions.json!');
+        console.log('SOLUTIONS_DATA:', SOLUTIONS_DATA);
 
-        // Error message for user
-        addBotMessage("⚠️ حدث خطأ في تحميل رسالة النهاية. تأكد من وجود ملف solutions.json");
-    }
+        // Error message for user
+        addBotMessage("⚠️ حدث خطأ في تحميل رسالة النهاية. تأكد من وجود ملف solutions.json");
+    }
 
-    chatState.mode = 'finished';
+    chatState.mode = 'finished';
 }
 
 // ============================================
@@ -672,342 +672,340 @@ async function showFarewellMessages() {
 
 document.addEventListener('DOMContentLoaded', async function () {
 
-    // Load configuration files first
-    const loaded = await loadConfigurations();
-    if (!loaded) return;
 
-    // Select elements
-    const authSection = document.getElementById('auth-section');
-    const signupForm = document.getElementById('signup-form');
-    const signinForm = document.getElementById('signin-form');
-    const otpModal = document.getElementById('otp-modal');
-    const introSection = document.getElementById('intro-section');
-    const mainInterface = document.getElementById('main-interface');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const messageInput = document.getElementById('message-input');
-    const messageForm = document.getElementById('message-form');
 
-    // UI helper functions
-    function showSection(sectionId) {
-        document.querySelectorAll('#app > div').forEach(section => {
-            section.classList.add('hidden');
-        });
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) targetSection.classList.remove('hidden');
-    }
+    // Select elements
+    const authSection = document.getElementById('auth-section');
+    const signupForm = document.getElementById('signup-form');
+    const signinForm = document.getElementById('signin-form');
+    const otpModal = document.getElementById('otp-modal');
+    const introSection = document.getElementById('intro-section');
+    const mainInterface = document.getElementById('main-interface');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const messageInput = document.getElementById('message-input');
+    const messageForm = document.getElementById('message-form');
 
-    function showMainSection(sectionId) {
-        document.querySelectorAll('[id$="-section"]:not(#auth-section):not(#intro-section)').forEach(section => {
-            section.classList.add('hidden');
-        });
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) targetSection.classList.remove('hidden');
-        currentSection = sectionId.replace('-section', '');
-    }
+    // UI helper functions
+    function showSection(sectionId) {
+        document.querySelectorAll('#app > div').forEach(section => {
+            section.classList.add('hidden');
+        });
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) targetSection.classList.remove('hidden');
+    }
 
-    function showError(errorId, formId) {
-        const errorDiv = document.getElementById(errorId);
-        const form = document.getElementById(formId);
-        if (errorDiv) errorDiv.classList.remove('hidden');
-        if (form) form.classList.add('shake');
-        setTimeout(() => {
-            if (form) form.classList.remove('shake');
-            if (errorDiv) errorDiv.classList.add('hidden');
-        }, 3000);
-    }
+    function showMainSection(sectionId) {
+        document.querySelectorAll('[id$="-section"]:not(#auth-section):not(#intro-section)').forEach(section => {
+            section.classList.add('hidden');
+        });
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) targetSection.classList.remove('hidden');
+        currentSection = sectionId.replace('-section', '');
+    }
 
-    // Authentication handlers
-    const showSigninBtn = document.getElementById('show-signin');
-    if (showSigninBtn) {
-        showSigninBtn.addEventListener('click', () => {
-            if (signupForm) signupForm.classList.add('hidden');
-            if (signinForm) signinForm.classList.remove('hidden');
-            const signinEmail = document.getElementById('signin-email');
-            if (signinEmail) signinEmail.focus();
-        });
-    }
+    function showError(errorId, formId) {
+        const errorDiv = document.getElementById(errorId);
+        const form = document.getElementById(formId);
+        if (errorDiv) errorDiv.classList.remove('hidden');
+        if (form) form.classList.add('shake');
+        setTimeout(() => {
+            if (form) form.classList.remove('shake');
+            if (errorDiv) errorDiv.classList.add('hidden');
+        }, 3000);
+    }
 
-    const showSignupBtn = document.getElementById('show-signup');
-    if (showSignupBtn) {
-        showSignupBtn.addEventListener('click', () => {
-            if (signinForm) signinForm.classList.add('hidden');
-            if (signupForm) signupForm.classList.remove('hidden');
-            const signupEmail = document.getElementById('signup-email');
-            if (signupEmail) signupEmail.focus();
-        });
-    }
+    // Authentication handlers
+    const showSigninBtn = document.getElementById('show-signin');
+    if (showSigninBtn) {
+        showSigninBtn.addEventListener('click', () => {
+            if (signupForm) signupForm.classList.add('hidden');
+            if (signinForm) signinForm.classList.remove('hidden');
+            const signinEmail = document.getElementById('signin-email');
+            if (signinEmail) signinEmail.focus();
+        });
+    }
 
-    const signupSubmit = document.getElementById('signup-submit');
-    if (signupSubmit) {
-        signupSubmit.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const email = document.getElementById('signup-email')?.value;
-            const password = document.getElementById('signup-password')?.value;
+    const showSignupBtn = document.getElementById('show-signup');
+    if (showSignupBtn) {
+        showSignupBtn.addEventListener('click', () => {
+            if (signinForm) signinForm.classList.add('hidden');
+            if (signupForm) signupForm.classList.remove('hidden');
+            const signupEmail = document.getElementById('signup-email');
+            if (signupEmail) signupEmail.focus();
+        });
+    }
 
-            if (!email || !password || password.length < 6) {
-                showError('signup-error', 'signup-submit');
-                return;
-            }
-            if (otpModal) otpModal.classList.remove('hidden');
-            const otpInput = document.querySelector('.otp-input');
-            if (otpInput) otpInput.focus();
-        });
-    }
+    const signupSubmit = document.getElementById('signup-submit');
+    if (signupSubmit) {
+        signupSubmit.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email')?.value;
+            const password = document.getElementById('signup-password')?.value;
 
-    const signinSubmit = document.getElementById('signin-submit');
-    if (signinSubmit) {
-        signinSubmit.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const email = document.getElementById('signin-email')?.value;
-            const password = document.getElementById('signin-password')?.value;
+            if (!email || !password || password.length < 6) {
+                showError('signup-error', 'signup-submit');
+                return;
+            }
+            if (otpModal) otpModal.classList.remove('hidden');
+            const otpInput = document.querySelector('.otp-input');
+            if (otpInput) otpInput.focus();
+        });
+    }
 
-            if (!email || !password) {
-                showError('signin-error', 'signin-submit');
-                return;
-            }
-            showSection('intro-section');
-        });
-    }
+    const signinSubmit = document.getElementById('signin-submit');
+    if (signinSubmit) {
+        signinSubmit.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('signin-email')?.value;
+            const password = document.getElementById('signin-password')?.value;
 
-    const googleSignup = document.getElementById('google-signup');
-    if (googleSignup) {
-        googleSignup.addEventListener('click', () => {
-            showSection('intro-section');
-        });
-    }
+            if (!email || !password) {
+                showError('signin-error', 'signin-submit');
+                return;
+            }
+            showSection('intro-section');
+        });
+    }
 
-    // OTP verification
-    const verifyOtp = document.getElementById('verify-otp');
-    if (verifyOtp) {
-        verifyOtp.addEventListener('click', function () {
-            const otpInputs = document.querySelectorAll('.otp-input');
-            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+    const googleSignup = document.getElementById('google-signup');
+    if (googleSignup) {
+        googleSignup.addEventListener('click', () => {
+            showSection('intro-section');
+        });
+    }
 
-            if (otpValue.length === 6) {
-                if (otpModal) otpModal.classList.add('hidden');
-                showSection('intro-section');
-            } else {
-                alert("Please enter all 6 digits.");
-            }
-        });
-    }
+    // OTP verification
+    const verifyOtp = document.getElementById('verify-otp');
+    if (verifyOtp) {
+        verifyOtp.addEventListener('click', function () {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
 
-    // Intro section
-    document.addEventListener('click', function (e) {
-        if (e.target.classList.contains('next-intro')) {
-            currentIntroStep++;
-            const currentStep = document.querySelector(`[data-step="${currentIntroStep - 1}"]`);
-            const nextStep = document.querySelector(`[data-step="${currentIntroStep}"]`);
-            if (currentStep) currentStep.classList.add('hidden');
-            if (nextStep) nextStep.classList.remove('hidden');
-        }
-    });
+            if (otpValue.length === 6) {
+                if (otpModal) otpModal.classList.add('hidden');
+                showSection('intro-section');
+            } else {
+                alert("Please enter all 6 digits.");
+            }
+        });
+    }
 
-    const startChat = document.getElementById('start-chat');
-    if (startChat) {
-        startChat.addEventListener('click', function () {
-            showSection('main-interface');
-            showMainSection('chat-section');
-            if (messageInput) messageInput.focus();
-        });
-    }
+    // Intro section
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('next-intro')) {
+            currentIntroStep++;
+            const currentStep = document.querySelector(`[data-step="${currentIntroStep - 1}"]`);
+            const nextStep = document.querySelector(`[data-step="${currentIntroStep}"]`);
+            if (currentStep) currentStep.classList.add('hidden');
+            if (nextStep) nextStep.classList.remove('hidden');
+        }
+    });
 
-    // Sidebar
-    function toggleSidebar() {
-        if (sidebar) sidebar.classList.toggle('-translate-x-full');
-        if (sidebarOverlay) sidebarOverlay.classList.toggle('hidden');
-    }
+    const startChat = document.getElementById('start-chat');
+    if (startChat) {
+        startChat.addEventListener('click', function () {
+            showSection('main-interface');
+            showMainSection('chat-section');
+            if (messageInput) messageInput.focus();
+        });
+    }
 
-    const menuToggle = document.getElementById('menu-toggle');
-    if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+    // Sidebar
+    function toggleSidebar() {
+        if (sidebar) sidebar.classList.toggle('-translate-x-full');
+        if (sidebarOverlay) sidebarOverlay.classList.toggle('hidden');
+    }
 
-    const closeSidebar = document.getElementById('close-sidebar');
-    if (closeSidebar) closeSidebar.addEventListener('click', toggleSidebar);
+    const menuToggle = document.getElementById('menu-toggle');
+    if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
 
-    if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+    const closeSidebar = document.getElementById('close-sidebar');
+    if (closeSidebar) closeSidebar.addEventListener('click', toggleSidebar);
 
-    // Navigation
-    const navButtons = {
-        'nav-chat': 'chat-section',
-        'nav-profile': 'profile-section',
-        'nav-settings': 'settings-section',
-        'nav-support': 'support-section'
-    };
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
 
-    Object.entries(navButtons).forEach(([btnId, sectionId]) => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', function () {
-                Object.values(navButtons).forEach(id => {
-                    const section = document.getElementById(id);
-                    if (section) section.classList.add('hidden');
-                });
-                const targetSection = document.getElementById(sectionId);
-                if (targetSection) targetSection.classList.remove('hidden');
-                toggleSidebar();
-            });
-        }
-    });
+    // Navigation
+    const navButtons = {
+        'nav-chat': 'chat-section',
+        'nav-profile': 'profile-section',
+        'nav-settings': 'settings-section',
+        'nav-support': 'support-section'
+    };
 
-    // Logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function () {
-            if (confirm('Are you sure you want to logout?')) {
-                chatState = { mode: 'greeting', currentQuestionIndex: 0, collectedData: {} };
-                location.reload();
-            }
-        });
-    }
+    Object.entries(navButtons).forEach(([btnId, sectionId]) => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', function () {
+                Object.values(navButtons).forEach(id => {
+                    const section = document.getElementById(id);
+                    if (section) section.classList.add('hidden');
+                });
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) targetSection.classList.remove('hidden');
+                toggleSidebar();
+            });
+        }
+    });
 
-    // ============================================
-    // Main Chat Logic
-    // ============================================
+    // Logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            if (confirm('Are you sure you want to logout?')) {
+                chatState = { mode: 'greeting', currentQuestionIndex: 0, collectedData: {} };
+                location.reload();
+            }
+        });
+    }
 
-    if (messageForm) {
-        messageForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
+    // ============================================
+    // Main Chat Logic
+    // ============================================
 
-            if (!isConfigLoaded) {
-                addBotMessage("❌ لم يتم تحميل ملفات الإعدادات بعد. يرجى إعادة تحميل الصفحة.");
-                return;
-            }
+    if (messageForm) {
+        messageForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-            const userMessage = messageInput.value.trim();
-            if (!userMessage) return;
+            if (!isConfigLoaded) {
+                addBotMessage("❌ لم يتم تحميل ملفات الإعدادات بعد. يرجى إعادة تحميل الصفحة.");
+                return;
+            }
 
-            addUserMessage(userMessage);
-            messageInput.value = '';
+            const userMessage = messageInput.value.trim();
+            if (!userMessage) return;
 
-            // Check for farewell
-            if (RESPONSES_DATA.farewell_keywords.some(k => userMessage.toLowerCase().includes(k))) {
-                await delay(500);
-                const farewell = RESPONSES_DATA.farewells[Math.floor(Math.random() * RESPONSES_DATA.farewells.length)];
-                addBotMessage(farewell);
-                return;
-            }
+            addUserMessage(userMessage);
+            messageInput.value = '';
 
-            // State: selecting problem
-            if (chatState.mode === 'selecting_problem') {
-                const problemNumber = parseInt(userMessage);
-                const problems = chatState.solutionsState.problems;
+            // Check for farewell
+            if (RESPONSES_DATA.farewell_keywords.some(k => userMessage.toLowerCase().includes(k))) {
+                await delay(500);
+                const farewell = RESPONSES_DATA.farewells[Math.floor(Math.random() * RESPONSES_DATA.farewells.length)];
+                addBotMessage(farewell);
+                return;
+            }
 
-                if (problemNumber >= 1 && problemNumber <= problems.length) {
-                    await showProblemSolutions(problemNumber - 1);
-                } else {
-                    addBotMessage("❌ رقم غير صحيح. اختر رقم من القائمة.");
-                }
-                return;
-            }
+            // State: selecting problem
+            if (chatState.mode === 'selecting_problem') {
+                const problemNumber = parseInt(userMessage);
+                const problems = chatState.solutionsState.problems;
 
-            // State: after showing problem solutions
-            if (chatState.mode === 'after_problem_solutions') {
-                const wantsToContinue = ['نعم', 'آه', 'yes', 'أكيد', 'اه', 'يلا', 'اه'].some(k =>
-                    userMessage.toLowerCase().includes(k)
-                );
+                if (problemNumber >= 1 && problemNumber <= problems.length) {
+                    await showProblemSolutions(problemNumber - 1);
+                } else {
+                    addBotMessage("❌ رقم غير صحيح. اختر رقم من القائمة.");
+                }
+                return;
+            }
 
-                if (wantsToContinue) {
-                    // Return to problems menu
-                    await showProblemsMenu();
-                } else {
-                    // Show farewell message
-                    await showFarewellMessages();
-                }
-                return;
-            }
+            // State: after showing problem solutions
+            if (chatState.mode === 'after_problem_solutions') {
+                const wantsToContinue = ['نعم', 'آه', 'yes', 'أكيد', 'اه', 'يلا', 'اه'].some(k =>
+                    userMessage.toLowerCase().includes(k)
+                );
 
-            // State: in interview
-            if (chatState.mode === 'in_interview') {
-                const currentQuestion = RESPONSES_DATA.interview_questions[chatState.currentQuestionIndex];
+                if (wantsToContinue) {
+                    // Return to problems menu
+                    await showProblemsMenu();
+                } else {
+                    // Show farewell message
+                    await showFarewellMessages();
+                }
+                return;
+            }
 
-                const { reply, storedKey } = getStoredKey(userMessage, currentQuestion);
-                chatState.collectedData[currentQuestion.field] = storedKey;
+            // State: in interview
+            if (chatState.mode === 'in_interview') {
+                const currentQuestion = RESPONSES_DATA.interview_questions[chatState.currentQuestionIndex];
 
-                await delay(500);
-                addBotMessage(reply);
+                const { reply, storedKey } = getStoredKey(userMessage, currentQuestion);
+                chatState.collectedData[currentQuestion.field] = storedKey;
 
-                chatState.currentQuestionIndex++;
+                await delay(500);
+                addBotMessage(reply);
 
-                if (chatState.currentQuestionIndex < RESPONSES_DATA.interview_questions.length) {
-                    const nextQuestion = RESPONSES_DATA.interview_questions[chatState.currentQuestionIndex];
-                    await delay(1000);
-                    addBotMessage(nextQuestion.question);
-                } else {
-                    await delay(1000);
-                    addBotMessage(RESPONSES_DATA.interview_end);
+                chatState.currentQuestionIndex++;
 
-                    await sendDataToAPI(chatState.collectedData);
-                }
-            }
-            // State: awaiting confirmation
-            else if (chatState.mode === 'awaiting_confirmation') {
-                const isConfirmed = RESPONSES_DATA.interview_intro.confirmation_keywords.some(k =>
-                    userMessage.toLowerCase().includes(k)
-                );
+                if (chatState.currentQuestionIndex < RESPONSES_DATA.interview_questions.length) {
+                    const nextQuestion = RESPONSES_DATA.interview_questions[chatState.currentQuestionIndex];
+                    await delay(1000);
+                    addBotMessage(nextQuestion.question);
+                } else {
+                    await delay(1000);
+                    addBotMessage(RESPONSES_DATA.interview_end);
 
-                if (isConfirmed) {
-                    chatState.mode = 'in_interview';
-                    chatState.currentQuestionIndex = 0;
-                    await delay(500);
-                    addBotMessage(RESPONSES_DATA.interview_questions[0].question);
-                } else {
-                    chatState.mode = 'greeting';
-                    await delay(500);
-                    addBotMessage("تمام، براحتك. 😊 لو احتجت حاجة أنا هنا.");
-                }
-            }
-            // State: greeting
-            else if (chatState.mode === 'greeting') {
-                // Check if greeting
-                let isGreeting = false;
-                for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
-                    if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
-                        const greetings = RESPONSES_DATA.greetings[type];
-                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-                        await delay(500);
-                        addBotMessage(greeting);
-                        isGreeting = true;
-                        break;
-                    }
-                }
+                    await sendDataToAPI(chatState.collectedData);
+                }
+            }
+            // State: awaiting confirmation
+            else if (chatState.mode === 'awaiting_confirmation') {
+                const isConfirmed = RESPONSES_DATA.interview_intro.confirmation_keywords.some(k =>
+                    userMessage.toLowerCase().includes(k)
+                );
 
-                if (!isGreeting) {
-                    // Check for negative mood
-                    const isNegativeMood = Object.values(RESPONSES_DATA.mood_keywords)
-                        .flat()
-                        .some(k => userMessage.toLowerCase().includes(k));
+                if (isConfirmed) {
+                    chatState.mode = 'in_interview';
+                    chatState.currentQuestionIndex = 0;
+                    await delay(500);
+                    addBotMessage(RESPONSES_DATA.interview_questions[0].question);
+                } else {
+                    chatState.mode = 'greeting';
+                    await delay(500);
+                    addBotMessage("تمام، براحتك. 😊 لو احتجت حاجة أنا هنا.");
+                }
+            }
+            // State: greeting
+            else if (chatState.mode === 'greeting') {
+                // Check if greeting
+                let isGreeting = false;
+                for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
+                    if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
+                        const greetings = RESPONSES_DATA.greetings[type];
+                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+                        await delay(500);
+                        addBotMessage(greeting);
+                        isGreeting = true;
+                        break;
+                    }
+                }
 
-                    if (isNegativeMood) {
-                        await delay(500);
-                        addBotMessage(RESPONSES_DATA.interview_intro.speech);
-                        chatState.mode = 'awaiting_confirmation';
-                    } else {
-                        await delay(500);
-                        const unclearMsg = RESPONSES_DATA.unclear_responses[0];
-                        addBotMessage(unclearMsg);
-                    }
-                }
-            }
-            // State: finished
-            else if (chatState.mode === 'finished') {
-                await delay(500);
-                addBotMessage("المقابلة انتهت بالفعل. لو عايز تبدأ من جديد، قول 'تعبان' أو 'مش كويس'.");
-                chatState.mode = 'greeting';
-                chatState.collectedData = {};
-                chatState.currentQuestionIndex = 0;
-                chatState.solutionsState = {
-                    problems: [],
-                    currentProblemIndex: -1,
-                    currentSolutionIndex: 0,
-                    currentResourceIndex: 0
-                };
-            }
-        });
-    }
+                if (!isGreeting) {
+                    // Check for negative mood
+                    const isNegativeMood = Object.values(RESPONSES_DATA.mood_keywords)
+                        .flat()
+                        .some(k => userMessage.toLowerCase().includes(k));
 
-    // Initialize app
-    showSection('auth-section');
-    const signupEmail = document.getElementById('signup-email');
-    if (signupEmail) signupEmail.focus();
+                    if (isNegativeMood) {
+                        await delay(500);
+                        addBotMessage(RESPONSES_DATA.interview_intro.speech);
+                        chatState.mode = 'awaiting_confirmation';
+                    } else {
+                        await delay(500);
+                        const unclearMsg = RESPONSES_DATA.unclear_responses[0];
+                        addBotMessage(unclearMsg);
+                    }
+                }
+            }
+            // State: finished
+            else if (chatState.mode === 'finished') {
+                await delay(500);
+                addBotMessage("المقابلة انتهت بالفعل. لو عايز تبدأ من جديد، قول 'تعبان' أو 'مش كويس'.");
+                chatState.mode = 'greeting';
+                chatState.collectedData = {};
+                chatState.currentQuestionIndex = 0;
+                chatState.solutionsState = {
+                    problems: [],
+                    currentProblemIndex: -1,
+                    currentSolutionIndex: 0,
+                    currentResourceIndex: 0
+                };
+            }
+        });
+    }
+
+    // Initialize app
+    showSection('auth-section');
+    const signupEmail = document.getElementById('signup-email');
+    if (signupEmail) signupEmail.focus();
 });
