@@ -434,6 +434,7 @@ function addBotMessage(message) {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = 'flex items-start space-x-4 message-pop';
+
     const content = message.trim().startsWith('<') ? message : parseMarkdown(message);
 
     messageDiv.innerHTML = `
@@ -444,9 +445,11 @@ function addBotMessage(message) {
             <div class="text-gray-800 leading-relaxed text-lg page-transition">${content}</div>
         </div>
     `;
+    
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
 }
+
 
 
 function showTypingIndicator() {
