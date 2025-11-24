@@ -436,11 +436,9 @@ function addBotMessage(message) {
     messageDiv.className = 'flex items-start space-x-4 message-pop';
     messageDiv.innerHTML = `
         <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
-            // 🚨 تصغير حجم الصورة
             class="w-10 h-10 rounded-full flex-shrink-0 shadow-lg object-cover">
         
         <div class="bot-message rounded-2xl p-6 max-w-xs shadow-xl"> 
-            // 🚨 الحل: إزالة الـ prose وتصحيح التغليف
             <div class="text-gray-800 leading-relaxed text-lg page-transition">${parseMarkdown(message)}</div>
         </div>
     `;
