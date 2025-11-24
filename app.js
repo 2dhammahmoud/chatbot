@@ -91,7 +91,7 @@ const RESPONSES_DATA = {
             "field": "Mood_Swings", "question": " حدة تقلبات مزاجك إيه؟ ( مثال : عالية / متوسطة / منخفضة )",
             "answer_replies": {
                 "High": { "keywords": ["عالي", "جدا", "اوي", "high","عاليه", "سريع"], "bot_reply": ["دي حاجة مرهقة جدًا، كأنك في قطار ملاهي."] },
-                "Medium": { "keywords": ["متوسط", "أحيانا", "medium"], "bot_reply": ["ده الطبيعي بتاعنا كلنا تقريبًا."] },
+                "Medium": { "keywords": ["متوسط", "أحيانا", "متوسطه","medium"], "bot_reply": ["ده الطبيعي بتاعنا كلنا تقريبًا."] },
                 "Low": { "keywords": ["منخفض", "قليل", "نادرا", "low"], "bot_reply": ["كويس جدًا إن مزاجك مستقر غالبًا."] }
             }
         },
@@ -434,12 +434,14 @@ function addBotMessage(message) {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = 'flex items-start space-x-4 message-pop';
+    const content = message.trim().startsWith('<') ? message : parseMarkdown(message);
+
     messageDiv.innerHTML = `
         <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
             class="w-10 h-10 rounded-full flex-shrink-0 shadow-lg object-cover">
         
         <div class="bot-message rounded-2xl p-6 max-w-xs shadow-xl"> 
-            <div class="text-gray-800 leading-relaxed text-lg page-transition">${parseMarkdown(message)}</div>
+            <div class="text-gray-800 leading-relaxed text-lg page-transition">${content}</div>
         </div>
     `;
     messagesContainer.appendChild(messageDiv);
