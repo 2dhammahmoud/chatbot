@@ -992,9 +992,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                     addBotMessage("تمام، براحتك. 😊 لو احتجت حاجة أنا هنا.");
                 }
             }
-            // State: greeting
-else if (chatState.mode === 'greeting') {
-                // 1. التحقق أولاً: هل الكلام مجرد "سلام"؟ (Hi, Hello, إلخ)
+// State: greeting
+            else if (chatState.mode === 'greeting') {
+                // 1. التحقق أولاً: هل الكلام مجرد "سلام"؟
                 let isGreeting = false;
                 for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
                     if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
@@ -1007,43 +1007,23 @@ else if (chatState.mode === 'greeting') {
                     }
                 }
 
-                // لو رد بالسلام خلاص يخرج من الدالة
+                // لو رد بالسلام يوقف هنا
                 if (isGreeting) return;
 
-                // 2. التحقق ثانياً: هل فيه "كلمات سلبية" عشان نبدأ الاختبار؟ (حزين، تعبان، مخنوق)
+                // 2. التحقق ثانياً: هل فيه "مشاعر سلبية"؟
                 const isNegative = RESPONSES_DATA.negative_mood_keywords.some(k => userMessage.toLowerCase().includes(k));
                 
                 if (isNegative) {
                     await delay(500);
-                    // يعرض جملة البداية (أنا هنا عشان أساعدك...)
                     addBotMessage(RESPONSES_DATA.intro_speech);
-                    // يحول الحالة لانتظار موافقة المستخدم على الاختبار
                     chatState.mode = 'awaiting_confirmation';
                 } 
                 else {
-                    // 3. الحل العبقري: لو الكلام مش سلام ومش حزن (إنت مين؟ بتعمل إيه؟ الجو حر)
-                    // بنبعت الكلام لـ Gemini يدردش بذكاء ويرجعه للموضوع
+                    // 3. لو مش سلام ومش حزن، اسأل جيميناي
                     await askGemini(userMessage); 
                 }
-            }
-
-                if (!isGreeting) {
-                    // Check for negative mood
-                    const isNegativeMood = Object.values(RESPONSES_DATA.mood_keywords)
-                        .flat()
-                        .some(k => userMessage.toLowerCase().includes(k));
-
-                    if (isNegativeMood) {
-                        await delay(500);
-                        addBotMessage(RESPONSES_DATA.interview_intro.speech);
-                        chatState.mode = 'awaiting_confirmation';
-                    } else {
-                        await delay(500);
-                        const unclearMsg = RESPONSES_DATA.unclear_responses[0];
-                        addBotMessage(unclearMsg);
-                    }
-                }
-            }
+            } // 👈 القوس ده بيقفل حالة الـ greeting
+                
             // State: finished
             else if (chatState.mode === 'finished') {
                 await delay(500);
