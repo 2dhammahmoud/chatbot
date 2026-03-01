@@ -992,9 +992,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                     addBotMessage("تمام، براحتك. 😊 لو احتجت حاجة أنا هنا.");
                 }
             }
-// State: greeting
-            else if (chatState.mode === 'greeting') {
-                // 1. التحقق أولاً: هل الكلام مجرد "سلام"؟
+else if (chatState.mode === 'greeting') {
+                // 1. التحقق من السلام (Greetings)
                 let isGreeting = false;
                 for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
                     if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
@@ -1007,23 +1006,29 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 }
 
-                // لو رد بالسلام يوقف هنا
                 if (isGreeting) return;
 
-                // 2. التحقق ثانياً: هل فيه "مشاعر سلبية"؟
-                const isNegative = RESPONSES_DATA.negative_mood_keywords.some(k => userMessage.toLowerCase().includes(k));
+                // 2. التحقق من المشاعر السلبية (باستخدام mood_keywords)
+                // هنجمع كل الكلمات السلبية من الـ JSON بتاعك
+                const negativeKeywords = [
+                    ...RESPONSES_DATA.mood_keywords.تعبان,
+                    ...RESPONSES_DATA.mood_keywords.وحش,
+                    ...RESPONSES_DATA.mood_keywords.مبضون
+                ];
+
+                const isNegative = negativeKeywords.some(k => userMessage.toLowerCase().includes(k));
                 
                 if (isNegative) {
                     await delay(500);
-                    addBotMessage(RESPONSES_DATA.intro_speech);
+                    // ✅ التعديل هنا: المسار الصحيح في الـ JSON بتاعك هو interview_intro.speech
+                    addBotMessage(RESPONSES_DATA.interview_intro.speech);
                     chatState.mode = 'awaiting_confirmation';
                 } 
                 else {
-                    // 3. لو مش سلام ومش حزن، اسأل جيميناي
+                    // 3. لو مش سلام ومش حزن، اسأل Gemini
                     await askGemini(userMessage); 
                 }
-            } // 👈 القوس ده بيقفل حالة الـ greeting
-                
+            }
             // State: finished
             else if (chatState.mode === 'finished') {
                 await delay(500);
