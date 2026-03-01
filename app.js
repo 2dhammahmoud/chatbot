@@ -449,6 +449,31 @@ function addBotMessage(message) {
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
 }
+async function askGemini(message) {
+    // الرابط ده هو لينك الباك إند بتاعك على Hugging Face
+    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini';
+    
+    showTypingIndicator(); // إظهار النقط اللي بتتحرك (Loading)
+
+    try {
+        const response = await fetch(GEMINI_ROUTE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message }),
+        });
+
+        const result = await response.json();
+        removeTypingIndicator();
+
+        if (response.ok) {
+            // هنا بنادي على الدالة اللي أنت لسه باعتها عشان تعرض رد جيميناي
+            addBotMessage(result.reply); 
+        }
+    } catch (error) {
+        removeTypingIndicator();
+        addBotMessage("أنا معاك وسامعك.. كمل حكيك.");
+    }
+}
 
 
 
@@ -553,6 +578,33 @@ async function sendDataToAPI(collectedData) {
         console.error('❌ Network Error:', error);
         addBotMessage(`❌ فشل الاتصال بالخادم. الخطأ: ${error.message}\n\nتأكد من:\n• تشغيل api_server.py على المنفذ 8000\n• عدم وجود Firewall يمنع الاتصال`);
     }
+}
+// دالة جديدة للدردشة الذكية مع جيميناي عبر الباك إند
+async function askGemini(message) {
+    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini'; // تأكد من رابط الـ Space بتاعك
+    
+    showTypingIndicator(); // إظهار مؤشر الكتابة
+
+    try {
+        const response = await fetch(GEMINI_ROUTE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message }),
+        });
+
+        removeTypingIndicator();
+        const result = await response.json();
+        
+        if (response.ok) {
+            addBotMessage(result.reply); // عرض رد جيميناي الذكي
+        } else {
+            addBotMessage("معلش، حصلت مشكلة في الاتصال بذكائي الاصطناعي.. قولي حاسس بإيه؟");
+        }
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('Gemini Error:', error);
+        addBotMessage("أنا معاك وسامعك.. كمل حكيك (تأكد من تشغيل السيرفر).");
+    }
 }
 
 // ============================================
@@ -941,19 +993,39 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
             // State: greeting
-            else if (chatState.mode === 'greeting') {
-                // Check if greeting
-                let isGreeting = false;
-                for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
-                    if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
-                        const greetings = RESPONSES_DATA.greetings[type];
-                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-                        await delay(500);
-                        addBotMessage(greeting);
-                        isGreeting = true;
-                        break;
-                    }
-                }
+else if (chatState.mode === 'greeting') {
+                // 1. التحقق أولاً: هل الكلام مجرد "سلام"؟ (Hi, Hello, إلخ)
+                let isGreeting = false;
+                for (const [type, keywords] of Object.entries(RESPONSES_DATA.greetings_keywords)) {
+                    if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
+                        const greetings = RESPONSES_DATA.greetings[type];
+                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+                        await delay(500);
+                        addBotMessage(greeting);
+                        isGreeting = true;
+                        break;
+                    }
+                }
+
+                // لو رد بالسلام خلاص يخرج من الدالة
+                if (isGreeting) return;
+
+                // 2. التحقق ثانياً: هل فيه "كلمات سلبية" عشان نبدأ الاختبار؟ (حزين، تعبان، مخنوق)
+                const isNegative = RESPONSES_DATA.negative_mood_keywords.some(k => userMessage.toLowerCase().includes(k));
+                
+                if (isNegative) {
+                    await delay(500);
+                    // يعرض جملة البداية (أنا هنا عشان أساعدك...)
+                    addBotMessage(RESPONSES_DATA.intro_speech);
+                    // يحول الحالة لانتظار موافقة المستخدم على الاختبار
+                    chatState.mode = 'awaiting_confirmation';
+                } 
+                else {
+                    // 3. الحل العبقري: لو الكلام مش سلام ومش حزن (إنت مين؟ بتعمل إيه؟ الجو حر)
+                    // بنبعت الكلام لـ Gemini يدردش بذكاء ويرجعه للموضوع
+                    await askGemini(userMessage); 
+                }
+            }
 
                 if (!isGreeting) {
                     // Check for negative mood
