@@ -7,6 +7,7 @@
 // const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
 async function askGemini(message) {
     // ⚠️ تأكد إن ده رابط الـ Space اللي أنت شغال عليه حالياً (dhammahmoud) وليس القديم
+    // جرب الرابط ده في app.js
     const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini';
     
     showTypingIndicator(); 
