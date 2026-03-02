@@ -4,8 +4,35 @@
 
 
 
-const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
+// const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
+async function askGemini(message) {
+    // ⚠️ تأكد إن ده رابط الـ Space اللي أنت شغال عليه حالياً (dhammahmoud) وليس القديم
+    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini';
+    
+    showTypingIndicator(); 
 
+    try {
+        const response = await fetch(GEMINI_ROUTE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message }),
+        });
+
+        const result = await response.json();
+        removeTypingIndicator();
+
+        if (response.ok) {
+            addBotMessage(result.reply); // هنا جيميناي هيرد
+        } else {
+            console.error('Server Error:', result);
+            addBotMessage("معلش، السيرفر فيه مشكلة بسيطة.. قولي حاسس بإيه؟");
+        }
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('Fetch Error:', error);
+        addBotMessage("أنا معاك وسامعك.. كمل حكيك.");
+    }
+}
 
 // ============================================
 // 📊 البيانات المدمجة (Embedded Data)
