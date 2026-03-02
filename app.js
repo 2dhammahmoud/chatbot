@@ -6,24 +6,33 @@
 
 // const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
 async function askGemini(message) {
-    // ⚠️ تأكد إن ده رابط الـ Space اللي أنت شغال عليه حالياً (dhammahmoud) وليس القديم
-    // جرب الرابط ده في app.js
-    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini';
+    // ✅ تم التعديل للرابط الجديد الخاص بـ Adhamelmalhy
+    const GEMINI_ROUTE = 'https://adhamelmalhy-chatbot.hf.space/ask_gemini';
     
     showTypingIndicator(); 
 
     try {
         const response = await fetch(GEMINI_ROUTE, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json' 
+            },
             body: JSON.stringify({ message: message }),
         });
+
+        // التأكد من أن الرد ليس صفحة HTML (بسبب الـ 404)
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            throw new TypeError("Oops, we haven't got JSON!");
+        }
 
         const result = await response.json();
         removeTypingIndicator();
 
         if (response.ok) {
-            addBotMessage(result.reply); // هنا جيميناي هيرد
+            // إضافة رد جيميناي للشات
+            addBotMessage(result.reply || "أنا سامعك، كمل حكيك.."); 
         } else {
             console.error('Server Error:', result);
             addBotMessage("معلش، السيرفر فيه مشكلة بسيطة.. قولي حاسس بإيه؟");
@@ -31,7 +40,8 @@ async function askGemini(message) {
     } catch (error) {
         removeTypingIndicator();
         console.error('Fetch Error:', error);
-        addBotMessage("أنا معاك وسامعك.. كمل حكيك.");
+        // رسالة احتواء في حالة فشل الاتصال تماماً
+        addBotMessage("أنا معاك وسامعك.. حابب تحكي في إيه؟");
     }
 }
 
