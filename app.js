@@ -487,11 +487,12 @@ function addBotMessage(message) {
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
 }
+
 async function askGemini(message) {
-    // الرابط ده هو لينك الباك إند بتاعك على Hugging Face
-    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini';
+    // ✅ تأكد إن الرابط ده هو الجديد اللي جربناه واشتغل (Adhamelmalhy)
+    const GEMINI_ROUTE = 'https://adhamelmalhy-chatbot.hf.space/ask_gemini';
     
-    showTypingIndicator(); // إظهار النقط اللي بتتحرك (Loading)
+    showTypingIndicator(); 
 
     try {
         const response = await fetch(GEMINI_ROUTE, {
@@ -501,14 +502,19 @@ async function askGemini(message) {
         });
 
         const result = await response.json();
+        
+        // بنخفي علامة التحميل بمجرد وصول الرد
         removeTypingIndicator();
 
-        if (response.ok) {
-            // هنا بنادي على الدالة اللي أنت لسه باعتها عشان تعرض رد جيميناي
+        if (response.ok && result.reply) {
             addBotMessage(result.reply); 
+        } else {
+            addBotMessage("معلش، حصلت مشكلة بسيطة في الاتصال بذكائي الاصطناعي.. قولي حاسس بإيه؟");
         }
     } catch (error) {
         removeTypingIndicator();
+        console.error('Gemini Error:', error);
+        // رسالة احتواء ذكية لو السيرفر وقع
         addBotMessage("أنا معاك وسامعك.. كمل حكيك.");
     }
 }
@@ -617,33 +623,7 @@ async function sendDataToAPI(collectedData) {
         addBotMessage(`❌ فشل الاتصال بالخادم. الخطأ: ${error.message}\n\nتأكد من:\n• تشغيل api_server.py على المنفذ 8000\n• عدم وجود Firewall يمنع الاتصال`);
     }
 }
-// دالة جديدة للدردشة الذكية مع جيميناي عبر الباك إند
-async function askGemini(message) {
-    const GEMINI_ROUTE = 'https://dhammahmoud-stroke-chatbot.hf.space/ask_gemini'; // تأكد من رابط الـ Space بتاعك
-    
-    showTypingIndicator(); // إظهار مؤشر الكتابة
 
-    try {
-        const response = await fetch(GEMINI_ROUTE, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message }),
-        });
-
-        removeTypingIndicator();
-        const result = await response.json();
-        
-        if (response.ok) {
-            addBotMessage(result.reply); // عرض رد جيميناي الذكي
-        } else {
-            addBotMessage("معلش، حصلت مشكلة في الاتصال بذكائي الاصطناعي.. قولي حاسس بإيه؟");
-        }
-    } catch (error) {
-        removeTypingIndicator();
-        console.error('Gemini Error:', error);
-        addBotMessage("أنا معاك وسامعك.. كمل حكيك (تأكد من تشغيل السيرفر).");
-    }
-}
 
 // ============================================
 // Problem and Solution Display Functions
