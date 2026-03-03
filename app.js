@@ -3,7 +3,9 @@
 // ============================================
 
 
-
+const BASE_URL = "https://adhamelmalhy-chatbot.hf.space";
+const GEMINI_ROUTE = `${BASE_URL}/ask_gemini`;
+const PREDICT_ROUTE = `${BASE_URL}/predict_health`;
 // const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
 async function askGemini(message) {
     // ✅ تم التعديل للرابط الجديد الخاص بـ Adhamelmalhy
@@ -577,11 +579,11 @@ async function sendDataToAPI(collectedData) {
 
         console.log('📤 Sending data to API:', payload);
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+const response = await fetch(PREDICT_ROUTE, { // استخدمنا الاسم الجديد اللي عرفناه فوق
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+});
 
         removeTypingIndicator();
 
