@@ -7,7 +7,7 @@
 // const API_URL = 'https://adhamelmalhy-chatbot.hf.space/predict_health';
 async function askGemini(message) {
     // ✅ تم التعديل للرابط الجديد الخاص بـ Adhamelmalhy
-    const GEMINI_ROUTE = 'https://adhamelmalhy-chatbot.hf.space/ask_gemini';
+    const API_URL = "https://adhamelmalhy-chatbot.hf.space";
     
     showTypingIndicator(); 
 
