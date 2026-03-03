@@ -554,78 +554,82 @@ function removeTypingIndicator() {
 // ============================================
 // API Communication and Problem Display
 // ============================================
-
 async function sendDataToAPI(collectedData) {
-    showTypingIndicator();
-    await delay(1500);
+    showTypingIndicator();
+    await delay(1500);
 
-    try {
-        const payload = {
-            Gender: collectedData.Gender || 'Male',
-            Country: collectedData.Country || 'Other',
-            Occupation: collectedData.Occupation || 'Other',
-            Growing_Stress: collectedData.Growing_Stress || 'No',
-            Changes_Habits: collectedData.Changes_Habits || 'No',
-            Days_Indoors: collectedData.Days_Indoors || 'Moderate',
-            Mood_Swings: collectedData.Mood_Swings || 'Medium',
-            Coping_Struggles: collectedData.Coping_Struggles || 'No',
-            Work_Interest: collectedData.Work_Interest || 'Yes',
-            Social_Weakness: collectedData.Social_Weakness || 'No',
-            Mental_Health_History: collectedData.Mental_Health_History || 'No',
-            family_history: collectedData.family_history || 'No',
-            care_options: collectedData.care_options || 'No',
-            mental_health_interview: collectedData.mental_health_interview || 'No'
-        };
+    try {
+        const payload = {
+            Gender: collectedData.Gender || 'Male',
+            Country: collectedData.Country || 'Other',
+            Occupation: collectedData.Occupation || 'Other',
+            Growing_Stress: collectedData.Growing_Stress || 'No',
+            Changes_Habits: collectedData.Changes_Habits || 'No',
+            Days_Indoors: collectedData.Days_Indoors || 'Moderate',
+            Mood_Swings: collectedData.Mood_Swings || 'Medium',
+            Coping_Struggles: collectedData.Coping_Struggles || 'No',
+            Work_Interest: collectedData.Work_Interest || 'Yes',
+            Social_Weakness: collectedData.Social_Weakness || 'No',
+            Mental_Health_History: collectedData.Mental_Health_History || 'No',
+            family_history: collectedData.family_history || 'No',
+            care_options: collectedData.care_options || 'No',
+            mental_health_interview: collectedData.mental_health_interview || 'No'
+        };
 
-        console.log('📤 Sending data to API:', payload);
+        console.log('📤 Sending data to API:', payload);
 
-const response = await fetch(PREDICT_ROUTE, { // استخدمنا الاسم الجديد اللي عرفناه فوق
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-});
+        // تأكد أن PREDICT_ROUTE معرفة في أعلى الملف كـ:
+        // const PREDICT_ROUTE = "https://adhamelmalhy-chatbot.hf.space/predict_health";
+        const response = await fetch(PREDICT_ROUTE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
 
-        removeTypingIndicator();
+        removeTypingIndicator();
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
 
-        const result = await response.json();
-        console.log('📥 Received result from API:', result);
+        const result = await response.json();
+        console.log('📥 Received result from API:', result);
 
-        if (result.status === 'success') {
-            const stability = result.stability_percentage;
+        if (result.status === 'success') {
+            // ✅ التعديل هنا: حماية ضد الـ undefined والـ toFixed
+            const stability = (result.stability_percentage !== undefined && result.stability_percentage !== null) 
+                             ? Number(result.stability_percentage) 
+                             : 0;
 
-            // Display stability percentage
-            let predictionMessage = `بناءً على تحليل إجاباتك، نسبة **الصحة النفسية المناسبة** لديك: **${stability.toFixed(2)}%**\n\n`;
-            predictionMessage += result.final_advice;
+            // Display stability percentage
+            let predictionMessage = `بناءً على تحليل إجاباتك، نسبة **الصحة النفسية المناسبة** لديك: **${stability.toFixed(2)}%**\n\n`;
+            predictionMessage += result.final_advice || "شكراً لمشاركتك بياناتك معنا.";
 
-            addBotMessage(predictionMessage);
-            await delay(2000);
+            addBotMessage(predictionMessage);
+            await delay(2000);
 
-            // Save problems and show menu
-            if (result.solutions_report && result.solutions_report.problems && result.solutions_report.problems.length > 0) {
-                chatState.solutionsState.problems = result.solutions_report.problems;
-                await showProblemsMenu();
-            } else {
-                addBotMessage("✅ لم نجد أي تحديات رئيسية تحتاج لحلول فورية!");
-                await delay(1500);
-                await showFarewellMessages();
-            }
+            // Save problems and show menu
+            if (result.solutions_report && result.solutions_report.problems && result.solutions_report.problems.length > 0) {
+                chatState.solutionsState.problems = result.solutions_report.problems;
+                await showProblemsMenu();
+            } else {
+                addBotMessage("✅ لم نجد أي تحديات رئيسية تحتاج لحلول فورية!");
+                await delay(1500);
+                await showFarewellMessages();
+            }
 
-        } else {
-            addBotMessage(`❌ خطأ: ${result.detail || 'تحقق من Console'}`);
-        }
+        } else {
+            addBotMessage(`❌ خطأ: ${result.detail || 'حدث خطأ غير متوقع في البيانات'}`);
+        }
 
-    } catch (error) {
-        removeTypingIndicator();
-        console.error('❌ Network Error:', error);
-        addBotMessage(`❌ فشل الاتصال بالخادم. الخطأ: ${error.message}\n\nتأكد من:\n• تشغيل api_server.py على المنفذ 8000\n• عدم وجود Firewall يمنع الاتصال`);
-    }
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('❌ Network Error:', error);
+        // التعديل هنا: رسالة أوضح للمستخدم
+        addBotMessage(`❌ فشل الاتصال بالخادم. تأكد أن الـ Space الخاص بك في حالة Running على Hugging Face.`);
+    }
 }
-
 
 // ============================================
 // Problem and Solution Display Functions
