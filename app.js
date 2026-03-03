@@ -469,25 +469,22 @@ function addUserMessage(message) {
     scrollToBottom();
 }
 function addBotMessage(message) {
-    const messagesContainer = document.getElementById('messages-container');
-    if (!messagesContainer) return;
+    const container = document.getElementById('messages-container');
+    if (!container) return;
 
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex items-start space-x-4 message-pop my-4';
+    const div = document.createElement('div');
+    div.className = 'flex items-start space-x-4 my-4';
 
-    // ✅ التعديل الصح: دايماً شغل parseMarkdown على أي رسالة جاية
-    // عشان لو فيها رابط يتحول لزرار فوراً
-    const content = parseMarkdown(message);
+    // ✅ السطر السحري: لو الرسالة فيها كود زرار (<a>) اعرضها زي ما هي
+    const content = message.includes('<a') ? message : parseMarkdown(message);
 
-    messageDiv.innerHTML = `
-        <img src="image/download-removebg-preview.png" alt="MoodMate Avatar"
-            class="w-12 h-12 rounded-full flex-shrink-0 shadow-lg object-cover">
-        <div class="bot-message rounded-2xl p-6 max-w-md shadow-xl bg-white">
-            <div class="prose text-gray-800 leading-relaxed text-lg page-transition">${content}</div>
+    div.innerHTML = `
+        <img src="image/download-removebg-preview.png" class="w-10 h-10 rounded-full shadow-lg">
+        <div class="bot-message rounded-2xl p-6 shadow-xl bg-white text-gray-800">
+            ${content}
         </div>
     `;
-    
-    messagesContainer.appendChild(messageDiv);
+    container.appendChild(div);
     scrollToBottom();
 }
 
